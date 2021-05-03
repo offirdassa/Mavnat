@@ -70,39 +70,40 @@ public class AVLTree {
      * returns -1 if an item with key k already exists in the tree.
      */
     public int insert(int k, boolean i) {
-        int rotations = 0;
-        AVLNode newNode = new AVLNode(k,i);
+        int rebalancing = 1;
+        AVLNode newNode = new AVLNode(k,i); //1
         if (!this.root.isRealNode()) {
             this.root = newNode;
             updateTreeFields(newNode,true);
-            return rotations;
+            return rebalancing;
         }
         AVLNode location = getNode(k); //virtual node to be replaced
         if (location.isRealNode())
             return -1;
-        AVLNode parent = location.getParent();
+        AVLNode parent = location.getParent(); //2
         setChild(location,parent,newNode);
         AVLNode node = parent; //just for clarity
         updateTreeFields(newNode,true);
-        while (node != null) {
+        while (node != null) { //3
             node.setPrefixXor();
             int prevHeight = node.getHeight();
             node.setHeight();
             int newHeight = node.getHeight();
             boolean heightChanged = prevHeight != newHeight;
             AVLNode newParent = node.getParent();
-            int BF = balanceFactor(node);
-            if (Math.abs(BF) < 2 & !heightChanged) {
-                return rotations;
-            } else if (Math.abs(BF) < 2) {
+            int BF = balanceFactor(node); //3.1
+            if (Math.abs(BF) < 2 & !heightChanged) { //3.2
+                return rebalancing;
+            }
+            rebalancing++;
+            if (Math.abs(BF) < 2) {
                 node = newParent;
             } else {
                 rotate(node,BF);
-                rotations += 1;
                 node = newParent;
             }
         }
-        return rotations;    // to be replaced by student code
+        return rebalancing;    // to be replaced by student code
     }
 
     private void rotate(AVLNode node, int BF) {
@@ -128,9 +129,6 @@ public class AVLTree {
         AVLNode C = B.getRight();
         AVLNode BLeft = B.getLeft();
         AVLNode AParent = A.getParent();
-        if (this.getRoot() == A) {
-
-        }
         Boolean leftSon = A.isLeftChild();
         A.setRight(BLeft);
         BLeft.setParent(A);
@@ -475,7 +473,7 @@ public class AVLTree {
         }
 
         public void setPrefixXor() {
-            this.prefixXor = xor(this.prefixXor,this.left.prefixXor);
+            this.prefixXor = xor(this.info,this.left.prefixXor);
         }
 
         public boolean getPrefixXor() {
