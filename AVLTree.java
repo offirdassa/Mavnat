@@ -46,7 +46,7 @@ public class AVLTree {
         return getNode(k).getValue();
     }
 
-    private AVLNode getNode(int k) {
+    public AVLNode getNode(int k) { //should be private
         AVLNode node = this.root;
         while (node.isRealNode()) {
             if (node.getKey() == k)
@@ -75,6 +75,7 @@ public class AVLTree {
         if (!this.root.isRealNode()) {
             this.root = newNode;
             updateTreeFields(newNode,true);
+            this.root.setHeight();
             return rebalancing;
         }
         AVLNode location = getNode(k); //virtual node to be replaced
@@ -85,20 +86,19 @@ public class AVLTree {
         AVLNode node = parent; //just for clarity
         updateTreeFields(newNode,true);
         while (node != null) { //3
-            node.setPrefixXor();
-            int prevHeight = node.getHeight();
-            node.setHeight();
-            int newHeight = node.getHeight();
-            boolean heightChanged = prevHeight != newHeight;
+            boolean[] changes = node.updateNodeFields(); //first arg - if height changed; second arg - if prefixXor changed
             AVLNode newParent = node.getParent();
             int BF = balanceFactor(node); //3.1
-            if (Math.abs(BF) < 2 & !heightChanged) { //3.2
+            if (Math.abs(BF) < 2 & !changes[0] & !changes[1]) { //3.2
                 return rebalancing;
             }
-            rebalancing++;
+            if (changes[0]) {
+                rebalancing++;
+            }
             if (Math.abs(BF) < 2) {
                 node = newParent;
             } else {
+                if (!changes[0]) rebalancing++;
                 rotate(node,BF);
                 node = newParent;
             }
@@ -108,14 +108,14 @@ public class AVLTree {
 
     private void rotate(AVLNode node, int BF) {
         if (BF > 0) {
-            if (balanceFactor(node.getLeft()) > 0) {
+            if (balanceFactor(node.getLeft()) >= 0) {
                 rightRotate(node);
             } else {
                 leftRotate(node.getLeft());
                 rightRotate(node);
             }
         } else {
-            if (balanceFactor(node.getRight()) < 0) {
+            if (balanceFactor(node.getRight()) <= 0) {
                 leftRotate(node);
             } else {
                 rightRotate(node.getRight());
@@ -137,12 +137,13 @@ public class AVLTree {
         B.setParent(AParent);
         if (leftSon==null)
             this.root = B;
-        else{
-        if (leftSon) {
-            AParent.setLeft(B);
+        else {
+            if (leftSon) {
+                AParent.setLeft(B);
+                AParent.setPrefixXor();
+            }
+            else AParent.setRight(B);
         }
-        else
-            AParent.setRight(B);}
         A.setHeight();
         B.setHeight();
         B.setPrefixXor();
@@ -159,11 +160,13 @@ public class AVLTree {
         B.setRight(A);
         A.setParent(B);
         B.setParent(AParent);
-        if (leftSon==null)
+        if (leftSon==null) {
             this.root = B;
-        else{
+            B.setPrefixXor();
+        } else {
             if (leftSon) {
                 AParent.setLeft(B);
+                AParent.setPrefixXor();
             }
             else
                 AParent.setRight(B);}
@@ -192,7 +195,29 @@ public class AVLTree {
             if (k > this.max.getKey())
                 this.max = node;
             this.size += 1;
+        } else {
+            if (k == this.min.getKey())
+                this.min = successor(node);
+            if (k == this.max.getKey())
+                this.max = predecessor(node);
+            this.size -= 1;
         }
+    }
+
+    public AVLNode predecessor(AVLNode node) { //should be private
+        if (node.getLeft().getKey() != -1) {
+            node = node.getLeft();
+            while (node.getRight().getKey() != -1) {
+                node = node.getRight();
+            }
+            return node;
+        }
+        AVLNode parent = node.getParent();
+        while (parent != null && (node == this.root || node == parent.getLeft())) {
+            node = parent;
+            parent = node.getParent();
+        }
+        return parent;
     }
 
 
@@ -205,7 +230,50 @@ public class AVLTree {
      * returns -1 if an item with key k was not found in the tree.
      */
     public int delete(int k) {
-        return 42;    // to be replaced by student code
+        int rebalancing = 0;
+        AVLNode node = getNode(k);
+        if (!node.isRealNode()) { return -1;}
+        AVLNode parent = node.getParent();
+        updateTreeFields(node,false);
+        if (node.isLeaf()) { //case 1
+            setChild(node,parent,node.getRight());
+        } else if (node.hasOneChild()) { //case 2
+            if (node.getRight().isRealNode()) {
+                setChild(node,parent,node.getRight());
+            } else {
+                setChild(node,parent,node.getLeft());
+            }
+        } else { //case 3
+            AVLNode newNode = successor(node);
+            AVLNode newParent = newNode.getParent();
+            setChild(newNode,newParent,newNode.getRight());
+            setChild(node,parent,newNode);
+            if (node == newParent) {
+                parent = newNode;
+            } else {
+                parent = newParent;
+            }
+        }
+        node = parent; //for clarity
+        while (node != null) {
+            boolean[] changes = node.updateNodeFields(); //first arg - if height changed; second arg - if prefixXor changed
+            AVLNode newParent = node.getParent();
+            int BF = balanceFactor(node); //3.1
+            if (Math.abs(BF) < 2 & !changes[0] & !changes[1]) { //3.2
+                return rebalancing;
+            }
+            if (changes[0]) {
+                rebalancing++;
+            }
+            if (Math.abs(BF) < 2) {
+                node = newParent;
+            } else {
+                if (!changes[0]) rebalancing++;
+                rotate(node,BF);
+                node = newParent;
+            }
+        }
+        return rebalancing;    // to be replaced by student code
     }
 
     /**
@@ -312,10 +380,22 @@ public class AVLTree {
     public boolean prefixXor(int k){
         AVLNode node = getNode(k);
         AVLNode parent=node.getParent();
-        boolean res=node.getPrefixXor();
+        boolean res = node.getPrefixXor();
         while (parent!=null) {
             if (parent.getRight()==node)
                 res=xor(res,parent.getPrefixXor());
+            node=parent;
+            parent=parent.getParent();
+        }
+        return res;
+    }
+    public boolean prefixXor2(int k){
+        AVLNode node = getNode(k);
+        AVLNode parent=node.getParent();
+        boolean res = xor(node.left.getPrefixXor(),node.info);
+        while (parent!=null) {
+            if (parent.getRight()==node)
+                res=xor(res,xor(parent.info,parent.left.prefixXor));
             node=parent;
             parent=parent.getParent();
         }
@@ -343,7 +423,7 @@ public class AVLTree {
             return node;
         }
         AVLNode parent = node.getParent();
-        while (parent != null & node == parent.getRight()) {
+        while (parent != null && (node == this.root || node == parent.getRight())) {
             node = parent;
             parent = node.getParent();
         }
@@ -400,7 +480,7 @@ public class AVLTree {
                 leftVirtual.parent = this;
                 this.right = rightVirtual;
                 rightVirtual.parent = this;
-                this.prefixXor = info;
+               // this.prefixXor = info;
             } else { //Virtual Node;
                 this.key = -1;
                 this.info = null;
@@ -472,8 +552,11 @@ public class AVLTree {
             return this.height;
         }
 
-        public void setPrefixXor() {
+        public void setPrefixXor2() {
             this.prefixXor = xor(this.info,this.left.prefixXor);
+        }
+        public void setPrefixXor() {
+            this.prefixXor = xor(this.right.prefixXor,this.left.prefixXor);
         }
 
         public boolean getPrefixXor() {
@@ -484,6 +567,27 @@ public class AVLTree {
             if (this.parent==null)
                 return null;
             return this.parent.left == this;
+        }
+
+        public boolean isLeaf() {
+            if (!this.left.isRealNode() && !this.right.isRealNode()) {
+                return true;
+            }
+            return false;
+        }
+
+        public boolean[] updateNodeFields() {
+            boolean prevPrefixXor = this.getPrefixXor();
+            this.setPrefixXor();
+            boolean newPrefixXor = this.getPrefixXor();
+            int prevHeight = this.getHeight();
+            this.setHeight();
+            int newHeight = this.getHeight();
+            return new boolean[] {prevHeight != newHeight,prevPrefixXor != newPrefixXor};
+        }
+
+        public boolean hasOneChild() {
+            return xor(this.left.isRealNode(),this.right.isRealNode());
         }
     }
 
