@@ -311,14 +311,14 @@ public class AVLTree {
     }
 
     private void inOrderKeys_rec(AVLNode node, int[] arr, int[] index) {
-        if (node.getKey() == -1) {
+        if (node.isLeaf()) {
             arr[index[0]] = node.getKey();
             index[0] += 1;
         } else {
-            inOrderKeys_rec(node.getLeft(), arr, index);
+            if (node.getLeft().isRealNode()) inOrderKeys_rec(node.getLeft(), arr, index);
             arr[index[0]] = node.getKey();
             index[0] += 1;
-            inOrderKeys_rec(node.getRight(), arr, index);
+            if (node.getRight().isRealNode()) inOrderKeys_rec(node.getRight(), arr, index);
         }
     }
 
@@ -339,14 +339,14 @@ public class AVLTree {
     }
 
     private void inOrderInfo_rec(AVLNode node, boolean[] arr, int[] index) {
-        if (node.getKey() == -1) {
+        if (node.isLeaf()) {
             arr[index[0]] = node.getValue();
             index[0] += 1;
         } else {
-            inOrderInfo_rec(node.getLeft(), arr, index);
+            if (node.getLeft().isRealNode()) inOrderInfo_rec(node.getLeft(), arr, index);
             arr[index[0]] = node.getValue();
             index[0] += 1;
-            inOrderInfo_rec(node.getRight(), arr, index);
+            if (node.getRight().isRealNode()) inOrderInfo_rec(node.getRight(), arr, index);
         }
     }
 
@@ -391,7 +391,7 @@ public class AVLTree {
     }
     public boolean prefixXor2(int k){
         AVLNode node = getNode(k);
-        AVLNode parent=node.getParent();
+        AVLNode parent = node.getParent();
         boolean res = xor(node.left.getPrefixXor(),node.info);
         while (parent!=null) {
             if (parent.getRight()==node)
