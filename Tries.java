@@ -23,9 +23,11 @@ public class Tries {
         }
         boolean[] prefarray2 = new boolean[array.length];
         for (int i = 0; i < array.length; i++) {
-            prefarray2[i] = tree.prefixXor2(array[i]);
+            prefarray2[i] = tree.prefixXor3(array[i]);
         }
+        System.out.println(Arrays.toString(array));
         System.out.println(Arrays.toString(prefarray1));
         System.out.println(Arrays.toString(prefarray2));
+        System.out.println(tree.prefixXor3(15));
     }
 }

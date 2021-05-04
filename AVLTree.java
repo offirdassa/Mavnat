@@ -83,6 +83,7 @@ public class AVLTree {
             return -1;
         AVLNode parent = location.getParent(); //2
         setChild(location,parent,newNode);
+        newNode.setPrefixXor(); //added 0405 !!!!
         AVLNode node = parent; //just for clarity
         updateTreeFields(newNode,true);
         while (node != null) { //3
@@ -135,6 +136,10 @@ public class AVLTree {
         B.setLeft(A);
         A.setParent(B);
         B.setParent(AParent);
+        //
+        A.setHeight();
+        B.setHeight();
+        B.setPrefixXor();
         if (leftSon==null)
             this.root = B;
         else {
@@ -144,9 +149,9 @@ public class AVLTree {
             }
             else AParent.setRight(B);
         }
-        A.setHeight();
-        B.setHeight();
-        B.setPrefixXor();
+//        A.setHeight(); this is how it was, i changed the order
+//        B.setHeight();
+//        B.setPrefixXor();
     }
 
     private void rightRotate(AVLNode A) {
@@ -160,6 +165,10 @@ public class AVLTree {
         B.setRight(A);
         A.setParent(B);
         B.setParent(AParent);
+        //
+        A.setHeight();
+        B.setHeight();
+        A.setPrefixXor();
         if (leftSon==null) {
             this.root = B;
             B.setPrefixXor();
@@ -170,9 +179,9 @@ public class AVLTree {
             }
             else
                 AParent.setRight(B);}
-        A.setHeight();
-        B.setHeight();
-        A.setPrefixXor();
+//        A.setHeight();
+//        B.setHeight();
+//        A.setPrefixXor();
     }
 
     private void setChild(AVLNode location, AVLNode parent, AVLNode newNode) {
@@ -402,6 +411,19 @@ public class AVLTree {
         return res;
     }
 
+    public boolean prefixXor3(int k){ //this is working
+        AVLNode node = getNode(k);
+        AVLNode parent = node.getParent();
+        boolean res = xor(node.left.getPrefixXor(),node.info);
+        while (parent!=null) {
+            if (parent.getRight()==node)
+                res=xor(res,xor(parent.info,parent.left.prefixXor));
+            node=parent;
+            parent=parent.getParent();
+        }
+        return res;
+    }
+
     private static boolean xor(boolean x, boolean y) {
         return (x != y);
     }
@@ -552,11 +574,15 @@ public class AVLTree {
             return this.height;
         }
 
-        public void setPrefixXor2() {
+        public void setPrefixXor3() { //old
             this.prefixXor = xor(this.info,this.left.prefixXor);
         }
-        public void setPrefixXor() {
+        public void setPrefixXor2() { //last with ofir
             this.prefixXor = xor(this.right.prefixXor,this.left.prefixXor);
+        }
+
+        public void setPrefixXor() {
+            this.prefixXor = xor(info,xor(this.right.prefixXor,this.left.prefixXor));
         }
 
         public boolean getPrefixXor() {
