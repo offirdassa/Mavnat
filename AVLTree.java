@@ -26,6 +26,8 @@ public class AVLTree {
         this.max = virtual;
     }
 
+    public AVLNode getMin() { return this.min;}
+
     /**
      * public boolean empty()
      * <p>
@@ -209,7 +211,8 @@ public class AVLTree {
             this.size -= 1; }
     }
 
-    public AVLNode predecessor(AVLNode node) { //should be private
+    private AVLNode predecessor(AVLNode node) { //should be private
+        if (node == this.min) return null;
         if (node.getLeft().getKey() != -1) {
             node = node.getLeft();
             while (node.getRight().getKey() != -1) {
@@ -305,6 +308,7 @@ public class AVLTree {
      * Returns the info of the item with the smallest key in the tree,
      * or null if the tree is empty
      */
+    /** O(1) **/
     public Boolean min() {
         return this.min.getValue();
     }
@@ -315,6 +319,7 @@ public class AVLTree {
      * Returns the info of the item with the largest key in the tree,
      * or null if the tree is empty
      */
+    /** O(1) **/
     public Boolean max() {
         return this.max.getValue(); // to be replaced by student code
     }
@@ -325,7 +330,9 @@ public class AVLTree {
      * Returns a sorted array which contains all keys in the tree,
      * or an empty array if the tree is empty.
      */
+    /** O(n) **/
     public int[] keysToArray() {
+        if (this.size == 0) return new int[0];
         int[] arr = new int[this.size];
         AVLNode node = this.root;
         int[] index = new int[1];
@@ -353,7 +360,9 @@ public class AVLTree {
      * sorted by their respective keys,
      * or an empty array if the tree is empty.
      */
+    /** O(n) **/
     public boolean[] infoToArray() {
+        if (this.size == 0) return new boolean[0];
         boolean[] arr = new boolean[this.size];
         AVLNode node = this.root;
         int[] index = new int[1];
@@ -378,6 +387,7 @@ public class AVLTree {
      * <p>
      * Returns the number of nodes in the tree.
      */
+    /** O(1) **/
     public int size() {
         return this.size;
     }
@@ -387,6 +397,7 @@ public class AVLTree {
      * <p>
      * Returns the root AVL node, or null if the tree is empty
      */
+    /** O(1) **/
     public AVLNode getRoot() {
         return this.root;
     }
@@ -400,44 +411,21 @@ public class AVLTree {
      * precondition: this.search(k) != null
      *
      */
-    public boolean prefixXor(int k){
-        AVLNode node = getNode(k);
-        AVLNode parent=node.getParent();
-        boolean res = node.getPrefixXor();
-        while (parent!=null) {
-            if (parent.getRight()==node)
-                res=xor(res,parent.getPrefixXor());
-            node=parent;
-            parent=parent.getParent();
-        }
-        return res;
-    }
-    public boolean prefixXor2(int k){
+    /** O(logn) **/
+    public boolean prefixXor(int k){ //this is working
         AVLNode node = getNode(k);
         AVLNode parent = node.getParent();
-        boolean res = xor(node.left.getPrefixXor(),node.info);
+        boolean res = xor(node.getLeft().getPrefixXor(),node.getValue());
         while (parent!=null) {
             if (parent.getRight()==node)
-                res=xor(res,xor(parent.info,parent.left.prefixXor));
+                res=xor(res,xor(parent.getValue(),parent.getLeft().getPrefixXor()));
             node=parent;
             parent=parent.getParent();
         }
         return res;
     }
 
-    public boolean prefixXor3(int k){ //this is working
-        AVLNode node = getNode(k);
-        AVLNode parent = node.getParent();
-        boolean res = xor(node.left.getPrefixXor(),node.info);
-        while (parent!=null) {
-            if (parent.getRight()==node)
-                res=xor(res,xor(parent.info,parent.left.prefixXor));
-            node=parent;
-            parent=parent.getParent();
-        }
-        return res;
-    }
-
+    /** O(1) **/
     private static boolean xor(boolean x, boolean y) {
         return (x != y);
     }
@@ -450,7 +438,9 @@ public class AVLTree {
      * @param node - the node whose successor should be returned
      * @return the successor of 'node' if exists, null otherwise
      */
+    /** O(logn) **/
     public AVLNode successor(AVLNode node){
+        if (node == this.max) return null;
         if (node.getRight().getKey() != -1) {
             node = node.getRight();
             while (node.getLeft().getKey() != -1) {
@@ -475,6 +465,7 @@ public class AVLTree {
      *
      * precondition: this.search(k) != null
      */
+    /** O(n) **/
     public boolean succPrefixXor(int k){
         AVLNode node = this.min;
         boolean res = node.getValue();
@@ -506,6 +497,7 @@ public class AVLTree {
         private int height;
         private boolean prefixXor;
 
+        /** O(1) **/
         public AVLNode(int key, Boolean info) {
             if (key != -1) { //Real Node
                 this.key = key;
@@ -526,89 +518,89 @@ public class AVLTree {
         }
 
         //returns node's key (for virtual node return -1)
+        /** O(1) **/
         public int getKey() {
             return this.key; // to be replaced by student code
         }
 
-        public void setKey(int k) {
-            this.key = k;
-        }
-
         //returns node's value [info] (for virtual node return null)
+        /** O(1) **/
         public Boolean getValue() {
             return this.info; // to be replaced by student code
         }
 
-        public void setValue(boolean i) {
-            this.info = i;
-        }
-
         //sets left child
+        /** O(1) **/
         public void setLeft(AVLNode node) {
             this.left = node;
         }
 
         //returns left child (if there is no left child return null)
+        /** O(1) **/
         public AVLNode getLeft() {
             return this.left; // to be replaced by student code
         }
 
         //sets right child
+        /** O(1) **/
         public void setRight(AVLNode node) {
             this.right = node;
         }
 
         //returns right child (if there is no right child return null)
+        /** O(1) **/
         public AVLNode getRight() {
             return this.right;
         }
 
         //sets parent
+        /** O(1) **/
         public void setParent(AVLNode node) {
             this.parent = node;
         }
 
         //returns the parent (if there is no parent return null)
+        /** O(1) **/
         public AVLNode getParent() {
             return this.parent;
         }
 
         // Returns True if this is a non-virtual AVL node
+        /** O(1) **/
         public boolean isRealNode() {
             return !(this.key == -1);
         }
 
         // sets the height of the node
+        /** O(1) **/
         public void setHeight() {
             this.height =  1 + Math.max(this.getLeft().getHeight(),this.getRight().getHeight());
         }
 
         // Returns the height of the node (-1 for virtual nodes)
+        /** O(1) **/
         public int getHeight() {
             return this.height;
         }
 
-        public void setPrefixXor3() { //old
-            this.prefixXor = xor(this.info,this.left.prefixXor);
-        }
-        public void setPrefixXor2() { //last with ofir
-            this.prefixXor = xor(this.right.prefixXor,this.left.prefixXor);
-        }
-
+        /** O(1) **/
         public void setPrefixXor() {
             this.prefixXor = xor(info,xor(this.right.prefixXor,this.left.prefixXor));
         }
 
+        /** O(1) **/
         public boolean getPrefixXor() {
             return this.prefixXor;
         }
 
+        /** O(1) **/
         public Boolean isLeftChild() {
             if (this.parent==null)
                 return null;
             return this.parent.left == this;
         }
 
+        /** O(1) **/
         public boolean isLeaf() {
             if (!this.left.isRealNode() && !this.right.isRealNode()) {
                 return true;
@@ -616,6 +608,7 @@ public class AVLTree {
             return false;
         }
 
+        /** O(1) **/
         public boolean[] updateNodeFields() {
             boolean prevPrefixXor = this.getPrefixXor();
             this.setPrefixXor();
@@ -626,6 +619,7 @@ public class AVLTree {
             return new boolean[] {prevHeight != newHeight,prevPrefixXor != newPrefixXor};
         }
 
+        /** O(1) **/
         public boolean hasOneChild() {
             return xor(this.left.isRealNode(),this.right.isRealNode());
         }
