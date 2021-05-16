@@ -5,7 +5,7 @@ import java.util.*;
 public class Tries {
     public static void main(String[] args) {
         AVLTree tree = new AVLTree();
-        /*for (int i = 0; i < 50; i++) tree.insert(i, true);
+        /*for (int i = 0; i < 50; i++) tree.insert(i, true);*/
         Random random = new Random();
         int nextInt;
         int cnt = 0;
@@ -15,9 +15,8 @@ public class Tries {
                 tree.insert(nextInt, true);
                 cnt++;
             }
-        }*/
-        tree.insert(3,true);
-        System.out.println(tree.successor(tree.getRoot()));
+        }
+        System.out.println(Arrays.toString(tree.keysToArray()));
 //        tree.insert(15, false);
 //        tree.insert(10,true);
 //        tree.insert(22,true);

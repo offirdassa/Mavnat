@@ -341,15 +341,15 @@ public class AVLTree {
     }
 
     private void inOrderKeys_rec(AVLNode node, int[] arr, int[] index) {
-        if (node.isLeaf()) {
+        /*if (node.isLeaf()) {
             arr[index[0]] = node.getKey();
             index[0] += 1;
-        } else {
+        } else { */
             if (node.getLeft().isRealNode()) inOrderKeys_rec(node.getLeft(), arr, index);
             arr[index[0]] = node.getKey();
             index[0] += 1;
             if (node.getRight().isRealNode()) inOrderKeys_rec(node.getRight(), arr, index);
-        }
+        //}
     }
 
 
@@ -371,15 +371,15 @@ public class AVLTree {
     }
 
     private void inOrderInfo_rec(AVLNode node, boolean[] arr, int[] index) {
-        if (node.isLeaf()) {
+        /*if (node.isLeaf()) {
             arr[index[0]] = node.getValue();
             index[0] += 1;
-        } else {
+        } else {*/
             if (node.getLeft().isRealNode()) inOrderInfo_rec(node.getLeft(), arr, index);
             arr[index[0]] = node.getValue();
             index[0] += 1;
             if (node.getRight().isRealNode()) inOrderInfo_rec(node.getRight(), arr, index);
-        }
+        //}
     }
 
     /**
