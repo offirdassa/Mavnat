@@ -19,13 +19,15 @@ public class AVLTree {
     /**
      * This constructor creates an empty AVLTree.
      */
+    /** O(1) **/
     public AVLTree(){
         AVLNode virtual = new AVLNode(-1,null);
         this.root = virtual;
         this.min = virtual;
         this.max = virtual;
     }
-
+    /** O(1) **/
+    /**         ###################for tests should be deleted ###############**/
     public AVLNode getMin() { return this.min;}
 
     /**
@@ -33,9 +35,8 @@ public class AVLTree {
      * <p>
      * returns true if and only if the tree is empty
      */
-    public boolean empty() {
-        return (this.root == null);
-    }
+    /** O(1) **/
+    public boolean empty() {return (this.root == null);}
 
     /**
      * public boolean search(int k)
@@ -43,10 +44,18 @@ public class AVLTree {
      * returns the info of an item with key k if it exists in the tree
      * otherwise, returns null
      */
+    /** O(logn)) **/
     public Boolean search(int k) {
         return getNode(k).getValue();
     }
 
+    /**
+     * public AVLNode getNode(int k)
+     * <p>
+     * returns the node with key k if it exists in the tree
+     * otherwise, returns virtual node (was set in AVLNode)
+     */
+    /** O(logn)) **/
     public AVLNode getNode(int k) { //should be private
         AVLNode node = this.root;
         while (node.isRealNode()) {
@@ -70,136 +79,186 @@ public class AVLTree {
 	 * This always includes the newly-created node.
      * returns -1 if an item with key k already exists in the tree.
      */
+    /** O(logn)) **/
+    // the numbering in the code corresponds to the steps of the algorithm, as shown in class
     public int insert(int k, boolean i) {
         int rebalancing = 1;
-        AVLNode newNode = new AVLNode(k,i); //1
-        if (!this.root.isRealNode()) {
+        AVLNode newNode = new AVLNode(k,i);
+        if (!this.root.isRealNode()) { //if the tree is empty
             this.root = newNode;
             updateTreeFields(newNode,true);
             this.root.setHeight();
             return rebalancing;
         }
-        AVLNode location = getNode(k); //virtual node to be replaced
-        if (location.isRealNode())
+        AVLNode location = getNode(k); //the location that the new node should be insert to
+        if (location.isRealNode()) // if a node with key=k is already exists
             return -1;
-        AVLNode parent = location.getParent(); //2
-        setChild(location,parent,newNode); //boolean true for insert false for delete
-        newNode.setPrefixXor(); //added 0405 !!!!
+        AVLNode parent = location.getParent();
+        setChild(location,parent,newNode); // 1+2: sets the new node in its place
+        newNode.setPrefixXor();
         AVLNode node = parent; //just for clarity
         updateTreeFields(newNode,true);
-        while (node != null) { //3
+        //To make a legal insert for BST delete the while loop
+        //loop's purpose: balance the tree and its fields
+        while (node != null) {//3
             boolean[] changes = node.updateNodeFields(); //first arg - if height changed; second arg - if prefixXor changed
             AVLNode newParent = node.getParent();
             int BF = balanceFactor(node); //3.1
             if (Math.abs(BF) < 2 & !changes[0] & !changes[1]) { //3.2
                 return rebalancing;
             }
-            if (changes[0]) {
+            if (changes[0]) {//rebalancing was needed
                 rebalancing++;
             }
-            if (Math.abs(BF) < 2) {
+            if (Math.abs(BF) < 2) {//3.3
                 node = newParent;
-            } else {
+            }
+            else {//3.4
                 if (!changes[0]) rebalancing++;
                 rotate(node,BF);
                 node = newParent;
             }
         }
-        return rebalancing;    // to be replaced by student code
+        return rebalancing;
     }
-
+    /**
+     * private void rotate(AVLNode node,int BF)
+     * <p>
+     * performs the rotation of node due to its BF
+     * the conditions are suitable for both insertion and deletion
+     */
+    /** O(1)) **/
     private void rotate(AVLNode node, int BF) {
         if (BF > 0) {
-            if (balanceFactor(node.getLeft()) >= 0) {
+            if (balanceFactor(node.getLeft()) >= 0) { //right rotation
                 rightRotate(node);
-            } else {
+            } else { // left then right
                 leftRotate(node.getLeft());
                 rightRotate(node);
             }
-        } else {
+        } else { // left rotation
             if (balanceFactor(node.getRight()) <= 0) {
                 leftRotate(node);
-            } else {
+            } else { // right then left
                 rightRotate(node.getRight());
                 leftRotate(node);
             }
         }
     }
-
+    /**
+     * private void leftRotate(AVLNode A)
+     * <p>
+     * performs a left rotation to the node A
+     * update the fields of the moved nodes
+     */
+    /** O(1)) **/
     private void leftRotate(AVLNode A) {
         AVLNode B = A.getRight();
         AVLNode BLeft = B.getLeft();
         AVLNode AParent = A.getParent();
-        Boolean leftSon = A.isLeftChild();
+        Boolean leftSon = A.isLeftChild(); // which child A to AParent
+        // B's left son becomes A's right
         A.setRight(BLeft);
         BLeft.setParent(A);
+        // A becomes B's left son
         B.setLeft(A);
         A.setParent(B);
+        // B's new parent is AParent
         B.setParent(AParent);
-        //
+        //updating nodes fields of A and B
         A.setHeight();
         B.setHeight();
         A.setPrefixXor();
+        B.setPrefixXor();
+        // if the rotated node was the root
         if (leftSon==null)
             this.root = B;
+        // setting B the child of AParent
         else {
             if (leftSon)
                 AParent.setLeft(B);
             else
                 AParent.setRight(B); }
-        B.setPrefixXor();
     }
-
+    /**
+     * private void rightRotate(AVLNode A)
+     * <p>
+     * performs a right rotation to the node A
+     * update the fields of the moved nodes
+     */
+    /** O(1)) **/
     private void rightRotate(AVLNode A) {
         AVLNode B = A.getLeft();
         AVLNode BRight = B.getRight();
         AVLNode AParent = A.getParent();
-        Boolean leftSon = A.isLeftChild();
+        Boolean leftSon = A.isLeftChild(); // which child A to AParent
+        // B's right son becomes A's left
         A.setLeft(BRight);
         BRight.setParent(A);
+        // A becomes B's right son
         B.setRight(A);
         A.setParent(B);
+        // B's new parent is AParent
         B.setParent(AParent);
-        //
+        //updating nodes fields of A and B
         A.setHeight();
         B.setHeight();
         A.setPrefixXor();
+        B.setPrefixXor();
+        // if the rotated node was the root
         if (leftSon==null)
             this.root = B;
+        // setting B the child of AParent
         else {
             if (leftSon)
                 AParent.setLeft(B);
             else
                 AParent.setRight(B); }
-        B.setPrefixXor();
     }
-
+    /**
+     * private void setChild(AVLNode location,AVLNode parent,AVLNode newNode)
+     * <p>
+     * put newNode as a child of parent instead of location
+     */
+    /** O(1)) **/
     private void setChild(AVLNode location, AVLNode parent, AVLNode newNode) {
-        if (parent!=null){
+        if (parent!=null){//if the location isn't the root
             newNode.setParent(parent);
+            //check which son is location to parent
             if (parent.getRight() == location)
                 parent.setRight(newNode);
             else parent.setLeft(newNode); }
-        else{
+        else{//location is the root
             this.root=newNode;
             this.root.setParent(null);}
     }
-
+    /**
+     * private int balanceFactor(AVLNode node)
+     * <p>
+     * compute and return the balance factor of node
+     */
+    /** O(1)) **/
     private int balanceFactor(AVLNode node) {
         return node.left.getHeight()-node.right.getHeight();
     }
 
-    //true if insert, false if delete
+    /**
+     * private void updateTreeFields(AVLNode node,boolean b)
+     * pre: boolean b is true for insert and false for delete
+     * <p>
+     * update the fields size,min,max in case of insertion/deletion
+     */
+    /** insertion: O(1), deletion: O(logn)) **/
     private void updateTreeFields(AVLNode node, boolean b) {
         int k = node.getKey();
-        if (b) {
-            if (k < this.min.getKey() | !this.min.isRealNode())
+        if (b) { // node was inserted to the tree
+            if (k < this.min.getKey() | !this.min.isRealNode()) //the 2nd cond for insertion into empty tree
                 this.min = node;
             if (k > this.max.getKey())
                 this.max = node;
             this.size += 1;
-        } else {
-            if (this.size==1){
+        } else { // node was deleted from the tree
+            if (this.size==1){ // node was the only node in the tree, setting empty tree fields
                 this.min=new AVLNode(-1,null);
                 this.max=this.min;
             }
@@ -210,17 +269,23 @@ public class AVLTree {
 
             this.size -= 1; }
     }
-
+    /**
+     * private AVLNode predecessor(AVLNode node)
+     * <p>
+     * returns the node with maximal key k1 that maintains: k1<key(node)
+    /** O(logn)) **/
     private AVLNode predecessor(AVLNode node) { //should be private
         if (node == this.min) return null;
-        if (node.getLeft().getKey() != -1) {
+        if (node.getLeft().getKey() != -1) { // the predecessor is in the left subtree of node
             node = node.getLeft();
-            while (node.getRight().getKey() != -1) {
+            while (node.getRight().getKey() != -1) {// going right in the left subtree until gets to virtual node
                 node = node.getRight();
             }
             return node;
         }
         AVLNode parent = node.getParent();
+        // the predecessor is above node in the tree
+        // going up until we were climb left in the tree
         while (parent != null && (node == this.root || node == parent.getLeft())) {
             node = parent;
             parent = node.getParent();
@@ -237,25 +302,28 @@ public class AVLTree {
      * returns the number of nodes which required rebalancing operations (i.e. demotions or rotations).
      * returns -1 if an item with key k was not found in the tree.
      */
+    /** O(logn)) **/
+    // the numbering in the code corresponds to the steps of the algorithm, as shown in class
     public int delete(int k) {
         int rebalancing = 0;
         AVLNode node = getNode(k);
-        if (!node.isRealNode()) { return -1;}
+        if (!node.isRealNode()) { return -1;} //if node with key k doesn't exist
         AVLNode parent = node.getParent();
-        updateTreeFields(node,false);
-        if (node.isLeaf()) { //case 1
+        updateTreeFields(node,false); //update th tree fields
+        if (node.isLeaf()) { //case 1: deleting a leaf
             setChild(node,parent,new AVLNode(-1,null));  }
-        else if (node.hasOneChild()) { //case 2
+        else if (node.hasOneChild()) { //case 2: deleting a node with 1 son
+            //check which of node's son is real
             if (node.getRight().isRealNode()) {
                 setChild(node,parent,node.getRight());
             } else {
                 setChild(node,parent,node.getLeft());
             }
-        } else { //case 3
+        } else { //case 3: deleting a node with 2 sons
             AVLNode newNode = successor(node);
             AVLNode newParent = newNode.getParent();
             setChild(newNode,newParent,newNode.getRight());
-            replace(node,newNode);
+            replace(node,newNode); // insert newNode instead of node
             if (node == newParent) {
                 parent = newNode;
             } else {
@@ -263,6 +331,8 @@ public class AVLTree {
             }
         }
         node = parent; //for clarity
+        //To make a legal deletion for BST, delete the while loop
+        //loop's purpose: balance the tree and its fields
         while (node != null) {
             boolean[] changes = node.updateNodeFields(); //first arg - if height changed; second arg - if prefixXor changed
             AVLNode newParent = node.getParent();
@@ -281,21 +351,27 @@ public class AVLTree {
                 node = newParent;
             }
         }
-        return rebalancing;    // to be replaced by student code
+        return rebalancing;
     }
-
+    /**
+     * private void replace(AVLNode node,AVLNode newNode)
+     * <p>
+     * this method place newNode instead of node
+     */
+    /** O(1)) **/
     private void replace(AVLNode node, AVLNode newNode) {
         if (node==this.root) {
             this.root=newNode;
             newNode.setParent(null);
         }
-        else {
+        else { //setting newNode's parent
             newNode.setParent(node.getParent());
             if (node.isLeftChild())
                 node.getParent().setLeft(newNode);
             else
                 node.getParent().setRight(newNode);
         }
+        //setting newNode's children
         node.getRight().setParent(newNode);
         node.getLeft().setParent(newNode);
         newNode.setRight(node.getRight());
@@ -321,7 +397,7 @@ public class AVLTree {
      */
     /** O(1) **/
     public Boolean max() {
-        return this.max.getValue(); // to be replaced by student code
+        return this.max.getValue();
     }
 
     /**
@@ -520,13 +596,13 @@ public class AVLTree {
         //returns node's key (for virtual node return -1)
         /** O(1) **/
         public int getKey() {
-            return this.key; // to be replaced by student code
+            return this.key;
         }
 
         //returns node's value [info] (for virtual node return null)
         /** O(1) **/
         public Boolean getValue() {
-            return this.info; // to be replaced by student code
+            return this.info;
         }
 
         //sets left child
@@ -538,7 +614,7 @@ public class AVLTree {
         //returns left child (if there is no left child return null)
         /** O(1) **/
         public AVLNode getLeft() {
-            return this.left; // to be replaced by student code
+            return this.left;
         }
 
         //sets right child
