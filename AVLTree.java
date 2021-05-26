@@ -408,24 +408,24 @@ public class AVLTree {
      */
     /** O(n) **/
     public int[] keysToArray() {
-        if (this.size == 0) return new int[0];
+        if (this.size == 0) return new int[0]; // empty tree
         int[] arr = new int[this.size];
         AVLNode node = this.root;
-        int[] index = new int[1];
+        int[] index = new int[1]; // the index in the array, starts with index=0
         inOrderKeys_rec(node,arr,index);
         return arr;
     }
-
+    /**
+     * private void inOrderkeys_rec(AVLNode node, int[] arr, int[] index)
+     * <p>
+     * update the integers array by the keys of the trees inorder.
+     */
+    /** O(n) **/
     private void inOrderKeys_rec(AVLNode node, int[] arr, int[] index) {
-        /*if (node.isLeaf()) {
-            arr[index[0]] = node.getKey();
-            index[0] += 1;
-        } else { */
             if (node.getLeft().isRealNode()) inOrderKeys_rec(node.getLeft(), arr, index);
             arr[index[0]] = node.getKey();
             index[0] += 1;
             if (node.getRight().isRealNode()) inOrderKeys_rec(node.getRight(), arr, index);
-        //}
     }
 
 
@@ -438,24 +438,24 @@ public class AVLTree {
      */
     /** O(n) **/
     public boolean[] infoToArray() {
-        if (this.size == 0) return new boolean[0];
+        if (this.size == 0) return new boolean[0]; // empty tree
         boolean[] arr = new boolean[this.size];
         AVLNode node = this.root;
-        int[] index = new int[1];
+        int[] index = new int[1]; // index of the array, starts with index=0
         inOrderInfo_rec(node,arr,index);
         return arr;
     }
-
+    /**
+     * private void inOrderInfo_rec(AVLNode node, boolean[] arr, int[] index)
+     * <p>
+     * update the boolean array by the values of the nodes in order of their keys
+     */
+    /** O(n) **/
     private void inOrderInfo_rec(AVLNode node, boolean[] arr, int[] index) {
-        /*if (node.isLeaf()) {
-            arr[index[0]] = node.getValue();
-            index[0] += 1;
-        } else {*/
             if (node.getLeft().isRealNode()) inOrderInfo_rec(node.getLeft(), arr, index);
             arr[index[0]] = node.getValue();
             index[0] += 1;
             if (node.getRight().isRealNode()) inOrderInfo_rec(node.getRight(), arr, index);
-        //}
     }
 
     /**
