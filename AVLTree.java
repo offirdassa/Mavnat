@@ -26,9 +26,7 @@ public class AVLTree {
         this.min = virtual;
         this.max = virtual;
     }
-    /** O(1) **/
-    /**         ###################for tests should be deleted ###############**/
-    public AVLNode getMin() { return this.min;}
+
 
     /**
      * public boolean empty()
